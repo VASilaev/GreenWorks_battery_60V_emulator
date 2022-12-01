@@ -1,9 +1,9 @@
-#define IO_PIN 17
+п»ї#define IO_PIN 17
 #define LED_PIN 13
 
  
-// служебные макросы
-//Быстрый доступ к портам ввода/вывода - работает только с константами
+// СЃР»СѓР¶РµР±РЅС‹Рµ РјР°РєСЂРѕСЃС‹
+//Р‘С‹СЃС‚СЂС‹Р№ РґРѕСЃС‚СѓРї Рє РїРѕСЂС‚Р°Рј РІРІРѕРґР°/РІС‹РІРѕРґР° - СЂР°Р±РѕС‚Р°РµС‚ С‚РѕР»СЊРєРѕ СЃ РєРѕРЅСЃС‚Р°РЅС‚Р°РјРё
 #define digitalWriteC(pin,val)\
  if (val) { *((volatile uint8_t *) port_to_output_PGM[digital_pin_to_port_PGM[pin]]) |= (digital_pin_to_bit_mask_PGM[pin]);}\
  else {*((volatile uint8_t *) port_to_output_PGM[digital_pin_to_port_PGM[pin]]) &= ~(digital_pin_to_bit_mask_PGM[pin]);}
@@ -92,7 +92,7 @@ void debug(uint16_t bufer2) {
 
 void loop () {
 
-  //Уменьшаем таймаут  
+  //РЈРјРµРЅСЊС€Р°РµРј С‚Р°Р№РјР°СѓС‚  
   do {
     uint8_t delta = LSYSTYCK - prevT;  
     prevT += delta;
@@ -106,11 +106,11 @@ void loop () {
     debug(state);
   };
 
-  //ОСновная машина состояний
+  //РћРЎРЅРѕРІРЅР°СЏ РјР°С€РёРЅР° СЃРѕСЃС‚РѕСЏРЅРёР№
 
   
   switch (state) {
-    case 0: //На линии низкий уровень, ждем высокий
+    case 0: //РќР° Р»РёРЅРёРё РЅРёР·РєРёР№ СѓСЂРѕРІРµРЅСЊ, Р¶РґРµРј РІС‹СЃРѕРєРёР№
       if (IO_READ) {
         timeout = timeoutCMD = usToTick(90000);  
         code = 0xFFFFFF;
@@ -127,7 +127,7 @@ void loop () {
     case 11:
     case 16:
     case 21:
-      //Установка таймаута перед командой
+      //РЈСЃС‚Р°РЅРѕРІРєР° С‚Р°Р№РјР°СѓС‚Р° РїРµСЂРµРґ РєРѕРјР°РЅРґРѕР№
       timeout = timeoutCMD;
       state ++;
       break;
@@ -137,7 +137,7 @@ void loop () {
     case 12:
     case 17:
     case 22:
-      //Высокий уровень
+      //Р’С‹СЃРѕРєРёР№ СѓСЂРѕРІРµРЅСЊ
       if (!IO_READ) {
         timeout = usToTick(100);
         state++;        
@@ -151,7 +151,7 @@ void loop () {
     case 13:
     case 18:
     case 23:
-      //Неожиданный низкий уровень перед командой 
+      //РќРµРѕР¶РёРґР°РЅРЅС‹Р№ РЅРёР·РєРёР№ СѓСЂРѕРІРµРЅСЊ РїРµСЂРµРґ РєРѕРјР°РЅРґРѕР№ 
       if (IO_READ) { 
         state-=2;        
       } else if (!timeout) {     
@@ -198,7 +198,7 @@ void loop () {
 
         while (timeout_local) {
           if (!IO_READ) {
-            //начало передачи 
+            //РЅР°С‡Р°Р»Рѕ РїРµСЂРµРґР°С‡Рё 
             uint8_t current;
             uint8_t endCondition;
             uint8_t delta;
@@ -237,7 +237,7 @@ void loop () {
             if (bufer == 0x2DD2) {
               state++;
               timeout_local = 1;
-              LED_OFF; //Погасим в случае успеха
+              LED_OFF; //РџРѕРіР°СЃРёРј РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС…Р°
             } else {
               timeout_local = 0;
             };
@@ -301,7 +301,7 @@ void loop () {
   };
  
   if(state == 25) {
-      //Зацикливаем код
+      //Р—Р°С†РёРєР»РёРІР°РµРј РєРѕРґ
       timeout = timeoutCMD;
       tryCount = 4;     
       state = 21; 
