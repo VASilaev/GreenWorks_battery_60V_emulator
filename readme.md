@@ -2,3 +2,9 @@
 IO_PIN needs to be connected to the Ohm terminal via a 150 ohm resistor.
 
 Эмулятор батареи на 60 вольт для инструмента Greenworks. 
+
+Добавлена поддержка простой батареи 24В. Для ее выбора замените на соответствующий вариант
+
+```c++
+const uint8_t variant = VARIANT_24V_ONLY_PREAMBULA;
+```

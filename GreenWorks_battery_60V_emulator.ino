@@ -1,5 +1,11 @@
-﻿#define IO_PIN 17
+#define IO_PIN 17
 #define LED_PIN 13
+
+ 
+#define VARIANT_60V 1
+#define VARIANT_24V_ONLY_PREAMBULA 2
+
+const uint8_t variant = VARIANT_60V;
 
  
 // служебные макросы
@@ -273,10 +279,16 @@ void loop () {
   };
 
   if (state ==5) {
+    if (variant == VARIANT_60V) {
       timeout = timeoutCMD = usToTick(90000);  
       code = 0xEBF0FA;
       tryCount = 4;     
       state = 6;
+    } else if (variant == VARIANT_24V_ONLY_PREAMBULA) {
+      timeout = timeoutCMD = usToTick(250000);  
+      tryCount = 4;     
+      state = 1; 
+    }
   };
 
   if (state == 10) {
