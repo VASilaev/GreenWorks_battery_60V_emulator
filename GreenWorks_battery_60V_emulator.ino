@@ -1,11 +1,21 @@
 #define IO_PIN 17
 #define LED_PIN 13
 
- 
-#define VARIANT_60V 1
-#define VARIANT_24V_ONLY_PREAMBULA 2
+//Выберите свой аккумулятор, должна быть расскоментирована только одна строка
 
-const uint8_t variant = VARIANT_60V;
+//82V
+//const uint32_t[] SendDataList = {0xFFFFFF, 0xE6EBFA, 0xA9AFF9, 0xB7C3F3, 0xE1E8F8};
+//const uint32_t[] SendDataList = {0xFFFFFF, 0xE6EBFA, 0xD1D7F9, 0xF8FFF8};
+//const uint32_t[] SendDataList = {0xFFFFFF, 0xE6EBFA, 0xD1D7F9, 0чF8FFF8};
+
+//60V
+const uint32_t[] SendDataList = {0xFFFFFF, 0xEBF0FA, 0xF8FEF9, 0xD0DCF3, 0xDDE4F8};
+//40V
+//const uint32_t[] SendDataList = {0xFFFFFF, 0xF0F5FA, 0xF7FDF9, 0xC6D2F3, 0xE1E8F8};
+
+//24V
+//const uint32_t[] SendDataList = {0xFFFFFF, 0xF4F9FA, 0xF8FEF9, 0xF8FFF8};
+
 
  
 // служебные макросы
@@ -95,6 +105,12 @@ void debug(uint16_t bufer2) {
   //mySerial.print(bufer2, HEX);
 }
 
+const uint32_t[] TimeOutList = {90000, 90000, 90000, 90000, 180000};
+
+
+
+uint8_t current_msg;
+
 
 void loop () {
 
@@ -118,8 +134,10 @@ void loop () {
   switch (state) {
     case 0: //На линии низкий уровень, ждем высокий
       if (IO_READ) {
-        timeout = timeoutCMD = usToTick(90000);  
-        code = 0xFFFFFF;
+
+        current_msg = 0; 
+        code = SendDataList[current_msg];
+        timeout = TimeOutList[current_msg]
         tryCount = 4;     
         state = 2;
       }; 
@@ -128,48 +146,26 @@ void loop () {
          LED_TOGGLE;
       }
       break;  
-    case 1:
-    case 6:
-    case 11:
-    case 16:
-    case 21:
-      //Установка таймаута перед командой
-      timeout = timeoutCMD;
-      state ++;
-      break;
-
     case 2:
-    case 7: 
-    case 12:
-    case 17:
-    case 22:
       //Высокий уровень
       if (!IO_READ) {
         timeout = usToTick(100);
-        state++;        
+        state = 3;        
       } else if (!timeout) {     
-        state+=2;
+        state=4;
       };
       break;
-
     case 3:
-    case 8:
-    case 13:
-    case 18:
-    case 23:
       //Неожиданный низкий уровень перед командой 
       if (IO_READ) { 
-        state-=2;        
+        timeout = TimeOutList[current_msg]
+        state=2;        
       } else if (!timeout) {     
         state=0;
       };
       break;
 
     case 4:
-    case 9:
-    case 14:
-    case 19:
-    case 24:
       LED_ON;
       noInterrupts();
       IO_START_TX;
@@ -196,7 +192,9 @@ void loop () {
         }
       } while (false);
 
-      TimeOut(100);    
+      TimeOut(100);  
+
+      //Считываем ответ от инструмента  
       IO_START_RX;        
       do {
         uint16_t timeout_local = usToTick(1250);
@@ -241,7 +239,13 @@ void loop () {
             interrupts();
 
             if (bufer == 0x2DD2) {
-              state++;
+
+              if (current_msg < (sizeof(SendDataList) / sizeof(SendDataList[0]))) current_msg ++; 
+
+              code = SendDataList[current_msg];
+              timeout = TimeOutList[current_msg]
+              state = 2;
+
               timeout_local = 1;
               LED_OFF; //Погасим в случае успеха
             } else {
@@ -250,7 +254,7 @@ void loop () {
             break;
           };
    
-          do {
+          do { //Обновление timeout_local
             uint8_t delta = LSYSTYCK - prevT_local;  
             prevT_local += delta;
             if (timeout_local && delta) {
@@ -261,64 +265,18 @@ void loop () {
         };
 
         interrupts();
+
+        //Если ответ не получили вовремя повторить, если кончились попытки повтора все начинаем снова
         if (!timeout_local) {
           if (tryCount) { 
-            state -= 3;
+            state = 2;
           } else {
-            timeout = timeoutCMD = usToTick(90000);  
-            code = 0xFFFFFF;
-            tryCount = 4;     
-            state = 1;              
+            state = 0;              
           };
-        }   
-    
+        }       
       } while(false);
 
       prevT = LSYSTYCK; 
       break; 
   };
-
-  if (state ==5) {
-    if (variant == VARIANT_60V) {
-      timeout = timeoutCMD = usToTick(90000);  
-      code = 0xEBF0FA;
-      tryCount = 4;     
-      state = 6;
-    } else if (variant == VARIANT_24V_ONLY_PREAMBULA) {
-      timeout = timeoutCMD = usToTick(250000);  
-      tryCount = 4;     
-      state = 1; 
-    }
-  };
-
-  if (state == 10) {
-      timeout = timeoutCMD = usToTick(90000);  
-      code = 0xF8FEF9;
-      tryCount = 4;     
-      state = 11; 
-  };
-
-  if (state == 15) {
-      timeout = timeoutCMD = usToTick(90000);  
-      code = 0xD0DCF3;
-      tryCount = 4;     
-      state = 16;  
-  };
-  
-  if (state == 20) {
-      timeout = timeoutCMD = usToTick(180000);  
-      code = 0xDDE4F8;
-      tryCount = 4;     
-      state = 21; 
-  };
- 
-  if(state == 25) {
-      //Зацикливаем код
-      timeout = timeoutCMD;
-      tryCount = 4;     
-      state = 21; 
-  };
-
-
-
 };
