@@ -4,17 +4,17 @@
 //Выберите свой аккумулятор, должна быть расскоментирована только одна строка
 
 //82V
-//const uint32_t[] SendDataList = {0xFFFFFF, 0xE6EBFA, 0xA9AFF9, 0xB7C3F3, 0xE1E8F8};
-//const uint32_t[] SendDataList = {0xFFFFFF, 0xE6EBFA, 0xD1D7F9, 0xF8FFF8};
-//const uint32_t[] SendDataList = {0xFFFFFF, 0xE6EBFA, 0xD1D7F9, 0чF8FFF8};
+//const uint32_t SendDataList[] = {0xFFFFFF, 0xE6EBFA, 0xA9AFF9, 0xB7C3F3, 0xE1E8F8};
+//const uint32_t SendDataList[] = {0xFFFFFF, 0xE6EBFA, 0xD1D7F9, 0xF8FFF8};
+//const uint32_t SendDataList[] = {0xFFFFFF, 0xE6EBFA, 0xD1D7F9, 0чF8FFF8};
 
 //60V
-const uint32_t[] SendDataList = {0xFFFFFF, 0xEBF0FA, 0xF8FEF9, 0xD0DCF3, 0xDDE4F8};
+const uint32_t SendDataList[]  = {0xFFFFFF, 0xEBF0FA, 0xF8FEF9, 0xD0DCF3, 0xDDE4F8};
 //40V
-//const uint32_t[] SendDataList = {0xFFFFFF, 0xF0F5FA, 0xF7FDF9, 0xC6D2F3, 0xE1E8F8};
+//const uint32_t SendDataList[] = {0xFFFFFF, 0xF0F5FA, 0xF7FDF9, 0xC6D2F3, 0xE1E8F8};
 
 //24V
-//const uint32_t[] SendDataList = {0xFFFFFF, 0xF4F9FA, 0xF8FEF9, 0xF8FFF8};
+//const uint32_t SendDataList[] = {0xFFFFFF, 0xF4F9FA, 0xF8FEF9, 0xF8FFF8};
 
 
  
@@ -105,7 +105,7 @@ void debug(uint16_t bufer2) {
   //mySerial.print(bufer2, HEX);
 }
 
-const uint32_t[] TimeOutList = {90000, 90000, 90000, 90000, 180000};
+const uint32_t TimeOutList[] = {90000, 90000, 90000, 90000, 180000};
 
 
 
@@ -137,7 +137,7 @@ void loop () {
 
         current_msg = 0; 
         code = SendDataList[current_msg];
-        timeout = TimeOutList[current_msg]
+        timeout = TimeOutList[current_msg];
         tryCount = 4;     
         state = 2;
       }; 
@@ -158,7 +158,7 @@ void loop () {
     case 3:
       //Неожиданный низкий уровень перед командой 
       if (IO_READ) { 
-        timeout = TimeOutList[current_msg]
+        timeout = TimeOutList[current_msg];
         state=2;        
       } else if (!timeout) {     
         state=0;
@@ -243,7 +243,7 @@ void loop () {
               if (current_msg < (sizeof(SendDataList) / sizeof(SendDataList[0]))) current_msg ++; 
 
               code = SendDataList[current_msg];
-              timeout = TimeOutList[current_msg]
+              timeout = TimeOutList[current_msg];
               state = 2;
 
               timeout_local = 1;
